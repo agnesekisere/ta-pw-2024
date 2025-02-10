@@ -1,48 +1,54 @@
-import { expect, Page, test } from "@playwright/test";
+import { expect } from "@playwright/test";
 import { CartPage } from "../pages/cart.page";
+import { DashboardPage } from "../pages/dashboard.page";
+import { test } from '../fixtures/loggedInPage';
 
 test.describe("Cart Tests", () => {
-  let page: Page;
-  test.beforeAll(async ({browser}) =>{
-    const context = await browser.newContext();
-    page = await context.newPage();
-    const cartPage = new CartPage(page);
-    await cartPage.navigateTo();
-    await cartPage.login("aga09@inbox.lv", "P@ssword123");
-  })
-
-    test("Item can be added to cart", async () => {
-        const cartPage = new CartPage(page);
-        await cartPage.addToCartBtn();
-        await cartPage.verifyAlert('Product Added To Cart');
+    test("Item can be added to cart", async ({loggedInPage}) => {
+        const dashboardPage = new DashboardPage(loggedInPage);
+        await dashboardPage.addItemToCart("iphone 13 pro", 1);
+        const cartPage = new CartPage(loggedInPage);
+        await cartPage.verifyAlertDisplayed('Product Added To Cart');
+        await dashboardPage.openCart();
+        await expect(loggedInPage).toHaveURL('https://rahulshettyacademy.com/client/dashboard/cart');
+        await cartPage.verifyItemAdded("IPHONE 13 PRO");
     });  
 
-    test("Item can be removed from cart", async () => {
-        const cartPage = new CartPage(page);
-        await cartPage.openCart();
-        await expect(page).toHaveURL('https://rahulshettyacademy.com/client/dashboard/cart'); 
-        await cartPage.removeBtn();
-        await cartPage.verifyAlert('No Product in Your Cart');
+    test("Item can be removed from cart", async ({loggedInPage}) => {
+        const dashboardPage = new DashboardPage(loggedInPage);
+        await dashboardPage.addItemToCart("iphone 13 pro", 1);
+        const cartPage = new CartPage(loggedInPage);
+        await cartPage.verifyAlertDisplayed('Product Added To Cart');
+        await dashboardPage.openCart();
+        await expect(loggedInPage).toHaveURL('https://rahulshettyacademy.com/client/dashboard/cart'); 
+        await cartPage.removeBtnClick();
+        await cartPage.verifyAlertDisplayed('No Product in Your Cart');
+        await cartPage.homeBtnClick();
     });  
 
-    // kkas nestrādā :(
-    test("Successfully can add multiple different items", async () => {
-        const cartPage = new CartPage(page);
-        await cartPage.addToCartItems();
-        await cartPage.verifyAlert('Product Added To Cart');
-        await cartPage.openCart();
-        await expect(page).toHaveURL('https://rahulshettyacademy.com/client/dashboard/cart'); 
+    test("Successfully can add multiple different items", async ({loggedInPage}) => {
+        const dashboardPage = new DashboardPage(loggedInPage);
+        await dashboardPage.addItemToCart("iphone 13 pro", 1);
+        const cartPage = new CartPage(loggedInPage);
+        await cartPage.verifyAlertDisplayed('Product Added To Cart');
+        await dashboardPage.addItemToCart("zara coat 3", 1);
+        await cartPage.verifyAlertDisplayed('Product Added To Cart');
+        await dashboardPage.openCart();
+        await expect(loggedInPage).toHaveURL('https://rahulshettyacademy.com/client/dashboard/cart'); 
         await cartPage.openCheckout();
-        await cartPage.multipleItems(' Quantity: 1 ');
+        await cartPage.checkItemQuantity("zara coat 3", 1);
+        await cartPage.checkItemQuantity("iphone 13 pro", 1);
+        await cartPage.homeBtnClick();
     });  
 
-    test("Can't add to cart multiple similar items", async () => {
-        const cartPage = new CartPage(page);
-        await cartPage.addToCart3Items();
-        await cartPage.verifyAlert('Product Added To Cart');
-        await cartPage.openCart();
-        await expect(page).toHaveURL('https://rahulshettyacademy.com/client/dashboard/cart'); 
+    test("Can't add to cart multiple similar items", async ({loggedInPage}) => {
+        const dashboardPage = new DashboardPage(loggedInPage);
+        await dashboardPage.addItemToCart("iphone 13 pro", 3);
+        const cartPage = new CartPage(loggedInPage);
+        await cartPage.verifyAlertDisplayed('Product Added To Cart');
+        await dashboardPage.openCart();
+        await expect(loggedInPage).toHaveURL('https://rahulshettyacademy.com/client/dashboard/cart'); 
         await cartPage.openCheckout();
-        await cartPage.onlyOneItem(' Quantity: 1 ');
+        await cartPage.checkItemQuantity("iphone 13 pro", 1);
     }); 
 });

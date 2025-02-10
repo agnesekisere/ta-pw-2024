@@ -3,10 +3,12 @@ import { expect, Locator, Page } from "@playwright/test";
 export class RegistrationPage {
   readonly page: Page;
   readonly alertLocator: Locator;
+  readonly invalidFeedback: Locator;
 
   constructor(page: Page) {
     this.page = page;
     this.alertLocator = this.page.locator('div[role="alert"]');
+    this.invalidFeedback = this.page.locator('.invalid-feedback');
   }
 
   async navigateTo() {
@@ -51,36 +53,16 @@ export class RegistrationPage {
     await this.page.locator('input[id="login"]').click();
   }
   
-  async registrationMandatoryFields() {
-    await expect(this.page.getByText('*First Name is required')).toBeVisible();
-    await expect(this.page.getByText('*Email is required')).toBeVisible();
-    await expect(this.page.getByText('*Phone Number is required')).toBeVisible();
-    await expect(this.page.getByText('*Password is required')).toBeVisible();
-    await expect(this.page.getByText('Confirm Password is required')).toBeVisible();
-    await expect(this.page.getByText('*Please check above checkbox')).toBeVisible();
-  }
+async verifyInputRequired() {
+  await expect(this.page.getByText('*First Name is required')).toBeVisible();
+  await expect(this.page.getByText('*Email is required')).toBeVisible();
+  await expect(this.page.getByText('*Phone Number is required')).toBeVisible();
+  await expect(this.page.getByText('*Password is required')).toBeVisible();
+  await expect(this.page.getByText('Confirm Password is required')).toBeVisible();
+  await expect(this.page.getByText('*Please check above checkbox')).toBeVisible();
+}
 
-  async shortFirstName() {
-    await expect(this.page.getByText('*First Name must be 3 or more character long')).toBeVisible();
-  }
-  // brīdinājums par nepareizu e-pasta formātu
-  async validEmail() {
-    await expect(this.page.getByText('*Enter Valid Email')).toBeVisible();
-  }
-
-  async phoneNumber() {
-    await expect(this.page.getByText('*Phone Number must be 10 digit')).toBeVisible();
-  }
-
-  async phoneNumberValid() {
-    await expect(this.page.getByText('*only numbers is allowed')).toBeVisible();
-  }
-  // brīdinājums par paroles nesakritību
-  async passwordMatch() {
-    await expect(this.page.getByText('Password and Confirm Password must match with each other.')).toBeVisible();
-  }
-
-  async shortPassword() {
-    await expect(this.alertLocator).toBeVisible({timeout:3000});
+  async verifyInvalidInputFeedback(feedbackText: string) {
+    await expect(this.invalidFeedback).toHaveText(feedbackText);
   }
 }

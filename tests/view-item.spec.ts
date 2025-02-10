@@ -1,21 +1,15 @@
-import { expect, Page, test } from "@playwright/test";
+import { expect } from "@playwright/test";
 import { ViewItemPage } from "../pages/view-item.page";
+import { DashboardPage } from "../pages/dashboard.page";
+import { test } from '../fixtures/loggedInPage';
 
 test.describe("View Item Tests", () => {
-  let page: Page;
-  test.beforeAll(async ({browser}) =>{
-    const context = await browser.newContext();
-    page = await context.newPage();
-    const dashboardPage = new ViewItemPage(page);
-    await dashboardPage.navigateTo();
-    await dashboardPage.login("aga09@inbox.lv", "P@ssword123");
-  })
-
-  test("View Iphone", async () => {
-    const dashboardPage = new ViewItemPage(page);
-    await dashboardPage.viewItemBtn();
-    await expect(page).toHaveURL('https://rahulshettyacademy.com/client/dashboard/product-details/6581cade9fd99c85e8ee7ff5', {timeout: 5000}); 
-    await dashboardPage.iphone();
+  test("Item can be viewed", async ({loggedInPage}) => {
+    const dashboardPage = new DashboardPage(loggedInPage);
+    await dashboardPage.viewItem("IPHONE 13 PRO");
+    await expect(loggedInPage)
+    .toHaveURL('https://rahulshettyacademy.com/client/dashboard/product-details/67a8df56c0d3e6622a297ccd', {timeout: 5000}); 
+    const viewItemPage = new ViewItemPage(loggedInPage);
+    await viewItemPage.verifyHeaderText("IPHONE 13 PRO");
 });
-
 });

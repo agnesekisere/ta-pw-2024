@@ -1,7 +1,18 @@
-import { expect, test } from "@playwright/test";
+import { BrowserContext, expect, Page, test } from "@playwright/test";
 import { LoginPage } from "../pages/login.page";
 
 test.describe("Login Tests", () => {
+  let page: Page;
+  let context: BrowserContext;
+  test.beforeAll(async ({browser}) =>{
+    context = await browser.newContext();
+    page = await context.newPage();
+  })
+  test.afterAll(async () => {
+    await page.close();
+    await context.close();
+  });
+  
   test("User should be able to log in with valid credentials", async ({
     page,
   }) => {
@@ -17,7 +28,7 @@ test.describe("Login Tests", () => {
     const loginPage = new LoginPage(page);
     await loginPage.navigateTo();
     await loginPage.login("test9@mail.com", "P@ssword123");
-    await loginPage.verifyAlert('Incorrect email or password.');
+    await loginPage.verifyAlertDisplayed('Incorrect email or password.');
   });
 
   test("User can't login with wrong password", async ({
@@ -26,7 +37,7 @@ test.describe("Login Tests", () => {
     const loginPage = new LoginPage(page);
     await loginPage.navigateTo();
     await loginPage.login("aga09@inbox.lv", "Password123");
-    await loginPage.verifyAlert('Incorrect email or password.');
+    await loginPage.verifyAlertDisplayed('Incorrect email or password.');
   });
 
   test("Email and password fields are mandatory fields", async ({
@@ -34,7 +45,8 @@ test.describe("Login Tests", () => {
   }) => {
     const loginPage = new LoginPage(page);
     await loginPage.navigateTo();
-    await loginPage.login("", "");
-    await loginPage.loginMandatoryFields();
+    await loginPage.clickLoginBtn();
+    await loginPage.verifyErrorDisplayed('Email', '*Email is required');
+    await loginPage.verifyErrorDisplayed('Password', '*Password is required');
   });
 });

@@ -1,7 +1,18 @@
-import { test } from "@playwright/test";
+import { BrowserContext, Page, test } from "@playwright/test";
 import { RegistrationPage } from "../pages/registration.page";
 
 test.describe("Registration Tests", () => {
+  let page: Page;
+    let context: BrowserContext;
+    test.beforeAll(async ({browser}) =>{
+      context = await browser.newContext();
+      page = await context.newPage();
+    })
+    test.afterAll(async () => {
+      // Close the browser after all tests are done
+      await page.close();
+      await context.close();
+  });
   test("Registration form has mandatory fields", async ({
     page,
   }) => {
@@ -19,7 +30,7 @@ test.describe("Registration Tests", () => {
       ""
     );
     await registrationPage.submitForm();
-    await registrationPage.registrationMandatoryFields();
+    await registrationPage.verifyInputRequired();
   });
 
   test("First name should be at least 3 character long", async ({
@@ -39,7 +50,7 @@ test.describe("Registration Tests", () => {
       "P@ssword123"
     );
     await registrationPage.submitForm();
-    await registrationPage.shortFirstName();
+    await registrationPage.verifyInvalidInputFeedback("*First Name must be 3 or more character long");
   });
 
   test("Email should be valid", async ({
@@ -59,7 +70,7 @@ test.describe("Registration Tests", () => {
       "P@ssword123"
     );
     await registrationPage.submitForm();
-    await registrationPage.validEmail();
+    await registrationPage.verifyInvalidInputFeedback("*Enter Valid Email");
   });
 
   test("Phone number should be 10 digit", async ({
@@ -79,7 +90,7 @@ test.describe("Registration Tests", () => {
       "P@ssword123"
     );
     await registrationPage.submitForm();
-    await registrationPage.phoneNumber();
+    await registrationPage.verifyInvalidInputFeedback("*Phone Number must be 10 digit");
   });
 
   test("Phone number should be only numbers", async ({
@@ -92,14 +103,14 @@ test.describe("Registration Tests", () => {
       "Alan",
       "Test",
       "test@test.com",
-      "a",
+      "aaaaaaaaaa",
       "",
       "Male",
       "P@ssword123",
       "P@ssword123"
     );
     await registrationPage.submitForm();
-    await registrationPage.phoneNumberValid();
+    await registrationPage.verifyInvalidInputFeedback("*only numbers is allowed");
   });
 
   test("Passwords should match", async ({
@@ -119,7 +130,7 @@ test.describe("Registration Tests", () => {
       "P@ssword123"
     );
     await registrationPage.submitForm();
-    await registrationPage.passwordMatch();
+    await registrationPage.verifyInvalidInputFeedback("Password and Confirm Password must match with each other.");
   });
 
   test("Password should be at least 8 character long", async ({
@@ -140,6 +151,6 @@ test.describe("Registration Tests", () => {
     );
     await registrationPage.checkbox();
     await registrationPage.submitForm();
-    await registrationPage.verifyAlert('Password must be 8 Character Long!');
+    await registrationPage.verifyAlert("Password must be 8 Character Long!");
   });
 });
